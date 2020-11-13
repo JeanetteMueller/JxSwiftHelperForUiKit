@@ -1,0 +1,6 @@
+use_frameworks!
+target 'JxSwiftHelperForUiKit_Tests' do
+  pod 'JxSwiftHelperForUiKit', :path => '../'
+  
+  
+end
