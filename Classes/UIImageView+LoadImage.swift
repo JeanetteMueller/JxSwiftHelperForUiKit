@@ -10,8 +10,13 @@ import JxSwiftHelper
 
 public extension UIImageView {
     
-    func loadImageFromHttpPath(path: String, fallbackImage: UIImage, contentMode: UIView.ContentMode) {
-        let size = self.frame.size
+    func loadImageFromHttpPath(path: String, fallbackImage: UIImage, contentMode: UIView.ContentMode, withCustomSize customSize: CGSize? = nil) {
+        
+        var size = self.frame.size
+        
+        if let c = customSize {
+            size = c
+        }
         
         let quadratSize = CGSize(width: max(size.width, size.height), height: max(size.width, size.height))
         
