@@ -35,26 +35,26 @@ public extension UIImage {
         
         return imageDir.appending("/").appending(url.md5())
     }
-    class func getFilePath(withUrlString urlString:String) -> String {
+    class func getFilePath(urlString:String) -> String {
         
         let imageDir = FileHelper.shared.getImagesFolderPath()
         
         return imageDir.appending("/").appending(urlString.md5())
     }
-    class func getImage(withImageString imageString:String, andSize size:CGSize?, withMode mode:UIView.ContentMode, useCache cache:Bool = true) -> UIImage?{
+    class func getImage(imageString:String, size:CGSize?, mode:UIView.ContentMode, useCache:Bool = true) -> UIImage?{
         
         if let i = UIImage(named: imageString){
             return i
         }
         
-        let imagePath = UIImage.getFilePath(withUrlString: imageString)
+        let imagePath = UIImage.getFilePath(urlString: imageString)
         if !FileManager.default.fileExists(atPath: imagePath){
             return nil
         }
-        return UIImage.getImage(withImagePath: imagePath, andSize: size, withMode: mode, useCache: cache)
+        return UIImage.getImage(path: imagePath, size: size, mode: mode, useCache: useCache)
 
     }
-    class func getImage(withImagePath imagePath:String, andSize size:CGSize?, withMode mode:UIView.ContentMode, useCache cache:Bool = true) -> UIImage?{
+    class func getImage(path:String, size:CGSize?, mode:UIView.ContentMode, useCache:Bool = true) -> UIImage?{
         var useSize:CGSize
         
         if var mySize = size {
@@ -75,14 +75,14 @@ public extension UIImage {
         }
         
         var image:UIImage? = nil
-        if let imagePathWithSize = UIImage.pathToResizedImage(fromPath: imagePath, toSize: useSize, withMode: mode, useCache: cache){
+        if let imagePathWithSize = UIImage.pathToResizedImage(path: path, size: useSize, mode: mode, useCache: useCache){
             
             if let storedImage = UIImageCache.shared.object(forKey: imagePathWithSize as NSString){
                 return storedImage
             }else{
                 image = UIImage(contentsOfFile: imagePathWithSize)
                 if let storeImage = image{
-                    if cache{
+                    if useCache{
                         UIImageCache.shared.setObject(storeImage, forKey: imagePathWithSize as NSString)
                     }
                     return storeImage
@@ -91,17 +91,17 @@ public extension UIImage {
         }
         return nil
     }
-    class func pathToResizedImage(fromUrl urlString:String, toSize size:CGSize, withMode mode:UIView.ContentMode) -> String? {
-        let sourcePath = UIImage.getFilePath(withUrlString:urlString)
+    class func pathToResizedImage(urlString:String, size:CGSize, mode:UIView.ContentMode) -> String? {
+        let sourcePath = UIImage.getFilePath(urlString: urlString)
         
-        return UIImage.pathToResizedImage(fromPath: sourcePath, toSize: size, withMode: mode)
+        return UIImage.pathToResizedImage(path: sourcePath, size: size, mode: mode)
     }
-    class func pathToResizedImage(fromPath path:String, toSize size:CGSize, withMode mode:UIView.ContentMode, fileExtension ext:String = "png", asGrayscale gray: Bool = false, useCache cache:Bool = true) -> String? {
+    class func pathToResizedImage(path:String, size:CGSize, mode:UIView.ContentMode, fileExtension:String = "png", asGrayscale: Bool = false, useCache:Bool = true) -> String? {
         if FileManager.default.fileExists(atPath: path) {
 
             let modeString = String(format: "mode_%d", mode.rawValue)
             
-            let grayString = gray ? "bw-": ""
+            let grayString = asGrayscale ? "bw-": ""
             
             let newFilename = path
                 .appending("_")
@@ -112,7 +112,7 @@ public extension UIImage {
                 .appending(grayString)
                 .appending(modeString)
                 .appending(".")
-                .appending(ext)
+                .appending(fileExtension)
             
             if FileManager.default.fileExists(atPath: newFilename) {
                 //log("resized file exitiert schon", newFilename)
@@ -129,7 +129,7 @@ public extension UIImage {
                         
 //                        log("imagesize with width", x)
                         if size.width < CGFloat(x){
-                            let allReadyResizedVersionPath = path.appending("_").appendingFormat("%d", x).appending("-").appendingFormat("%d", x).appending(".").appending(ext)
+                            let allReadyResizedVersionPath = path.appending("_").appendingFormat("%d", x).appending("-").appendingFormat("%d", x).appending(".").appending(fileExtension)
                             
                             if FileManager.default.fileExists(atPath: allReadyResizedVersionPath) {
                                 originalImagePath = allReadyResizedVersionPath
@@ -142,8 +142,8 @@ public extension UIImage {
             
             if let original = UIImage(contentsOfFile: originalImagePath){
                 
-                if var saveImage = UIImage.createImage(fromOriginal: original, withSize: size, withMode: mode) {
-                    if gray {
+                if var saveImage = UIImage.createImage(original: original, size: size, mode: mode) {
+                    if asGrayscale {
                         saveImage = saveImage.grayScaleImage()
                     }
                     if let imageData = saveImage.pngData() as NSData?{
@@ -155,7 +155,7 @@ public extension UIImage {
                         imageData.write(toFile: newFilename as String, atomically: true)
                     
                     }
-                    if cache {
+                    if useCache {
                         UIImageCache.shared.setObject(saveImage, forKey: newFilename as NSString)
                     }
                     let url = URL(fileURLWithPath: newFilename)
@@ -173,7 +173,7 @@ public extension UIImage {
         return nil
     }
     
-    class func createImage(fromOriginal original: UIImage, withSize size:CGSize, withMode mode:UIView.ContentMode) -> UIImage?{
+    class func createImage(original: UIImage, size:CGSize, mode:UIView.ContentMode) -> UIImage?{
 //        log("create resized image")
         UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
         

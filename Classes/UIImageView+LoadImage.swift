@@ -10,7 +10,7 @@ import JxSwiftHelper
 
 public extension UIImageView {
     
-    func loadImageFromHttpPath(path: String, fallbackImage: UIImage, contentMode: UIView.ContentMode, withCustomSize customSize: CGSize? = nil) {
+    func loadImageFromHttpPath(path: String, fallbackImage: UIImage, contentMode: UIView.ContentMode, customSize: CGSize? = nil) {
         
         var size = self.frame.size
         
@@ -22,7 +22,7 @@ public extension UIImageView {
         
         if let localImage = UIImage(named: path) {
             self.image = localImage
-        } else if let imageFromFile = UIImage.getImage(withImageString: path, andSize: quadratSize, withMode: contentMode) {
+        } else if let imageFromFile = UIImage.getImage(imageString: path, size: quadratSize, mode: contentMode) {
             self.image = imageFromFile
         } else if let photoDetails = PhotoRecord(string: path) {
             photoDetails.image = fallbackImage
@@ -45,9 +45,9 @@ public extension UIImageView {
                 let size = self.frame.size
                 let quadratSize = CGSize(width: max(size.width, size.height), height: max(size.width, size.height))
 
-                if let imageFromFile = UIImage.getImage(withImageString: photoDetails.path,
-                                                        andSize: quadratSize,
-                                                        withMode: photoDetails.contentMode) {
+                if let imageFromFile = UIImage.getImage(imageString: photoDetails.path,
+                                                        size: quadratSize,
+                                                        mode: photoDetails.contentMode) {
                     self.image = imageFromFile
                 }
             }
