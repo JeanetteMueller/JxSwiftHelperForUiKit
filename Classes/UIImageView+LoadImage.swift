@@ -40,7 +40,7 @@ public extension UIImageView {
         let imageLoader = ImageDownloader(photoRecord: photoDetails)
         
         imageLoader.completionBlock = {
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 
                 let size = self.frame.size
                 let quadratSize = CGSize(width: max(size.width, size.height), height: max(size.width, size.height))
