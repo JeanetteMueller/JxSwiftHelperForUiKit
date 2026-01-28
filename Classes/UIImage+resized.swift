@@ -173,11 +173,13 @@ public extension UIImage {
         return nil
     }
     
-    class func createImage(original: UIImage, size:CGSize, mode:UIView.ContentMode) -> UIImage?{
+    class func createImage(original: UIImage, size: CGSize, mode: UIView.ContentMode, renderingMode: UIImage.RenderingMode = .alwaysOriginal) -> UIImage? {
 //        log("create resized image")
         UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
         
-        UIRectFill(CGRect(x: 0.0, y: 0.0, width: size.width, height: size.height))
+        if renderingMode == .alwaysOriginal {
+            UIRectFill(CGRect(x: 0.0, y: 0.0, width: size.width, height: size.height))
+        }
         
         let ratioX = original.size.width / size.width
         let ratioY = original.size.height / size.height
@@ -261,5 +263,12 @@ public extension UIImage {
             UIGraphicsEndImageContext()
             return image
         }
+    }
+
+    func resizeImage(_ size: CGSize) -> UIImage? {
+        return UIImage.createImage(original: self,
+                                   size: size,
+                                   mode: .scaleAspectFit,
+                                   renderingMode: self.renderingMode)
     }
 }
